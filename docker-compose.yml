@@ -1,0 +1,87 @@
+services:
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USERNAME}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
+    ports:
+      - 5672:5672
+      - 15672:15672
+    networks:
+      - adanetwork
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    restart: always
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  redis:
+    image: redis/redis-stack:latest
+    container_name: redis
+    environment:
+      - REDIS_ARGS=--requirepass ${REDIS_PASSWORD}
+    ports:
+      - 6379:6379
+      - 8001:8001
+    networks:
+      - adanetwork
+    volumes:
+      - redis_data:/data
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  consumer:
+    build:
+      context: .
+      dockerfile: ADA.Consumer/Dockerfile
+    image: ada.consumer
+    container_name: consumer
+    environment:
+      - RABBITMQ_HOSTNAME=${RABBITMQ_HOSTNAME}
+      - RABBITMQ_USERNAME=${RABBITMQ_USERNAME}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+      - REDIS_HOSTNAME=${REDIS_HOSTNAME}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    networks:
+      - adanetwork
+    depends_on:
+      - rabbitmq
+      - redis
+
+  producer:
+    build:
+      context: .
+      dockerfile: ADA.Producer/Dockerfile
+    image: ada.producer
+    container_name: producer
+    environment:
+      - CONNECTIONSTRINGS_AZURESTORAGEACCOUNT=${CONNECTIONSTRINGS_AZURESTORAGEACCOUNT}
+      - RABBITMQ_HOSTNAME=${RABBITMQ_HOSTNAME}
+      - RABBITMQ_USERNAME=${RABBITMQ_USERNAME}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+      - REDIS_HOSTNAME=${REDIS_HOSTNAME}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    ports:
+      - 8080:8080
+      - 8081:8081
+    networks:
+      - adanetwork
+    depends_on:
+      - rabbitmq
+      - redis
+
+volumes:
+  rabbitmq_data:
+  redis_data:
+
+networks:
+  adanetwork:
