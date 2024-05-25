@@ -1,3 +1,4 @@
+# Geração de valor randômico para evitar erro na criação da conta de armazenamento, que deve possuir um nome único
 resource "random_id" "value" {
   byte_length = 2
 }
@@ -14,6 +15,7 @@ resource "azurerm_storage_account" "ada" {
   ]
 }
 
+# Container utilizado pelo producer para armazenar os relatórios de transações fraudulentas
 resource "azurerm_storage_container" "ada" {
   name                  = "ada"
   storage_account_name  = azurerm_storage_account.ada.name
@@ -24,6 +26,7 @@ resource "azurerm_storage_container" "ada" {
   ]
 }
 
+# Compartilhamento utilizado pelos containers do RabbitMQ para persistência de dados
 resource "azurerm_storage_share" "rabbitmqstorage" {
   name                 = "rabbitmqstorage"
   storage_account_name = azurerm_storage_account.ada.name
@@ -34,6 +37,7 @@ resource "azurerm_storage_share" "rabbitmqstorage" {
   ]
 }
 
+# Compartilhamento utilizado pelos containers do Redis para persistência de dados
 resource "azurerm_storage_share" "redisstorage" {
   name                 = "redisstorage"
   storage_account_name = azurerm_storage_account.ada.name

@@ -4,8 +4,8 @@ resource "azurerm_container_app" "container_app_rabbitmq" {
   name                         = var.env_rabbitmq_hostname
   revision_mode                = "Single"
   ingress {
-    exposed_port = 5672
-    target_port  = 5672
+    exposed_port = 4369
+    target_port  = 4369
     transport    = "tcp"
     traffic_weight {
       latest_revision = true
@@ -26,20 +26,20 @@ resource "azurerm_container_app" "container_app_rabbitmq" {
         name  = "RABBITMQ_DEFAULT_PASS"
         value = var.env_rabbitmq_password
       }
-      volume_mounts {
-        name = "rabbitmqvolume"
-        path = "/var/lib/rabbitmq"
-      }
+      # volume_mounts {
+      #   name = "rabbitmqvolume"
+      #   path = "/var/lib/rabbitmq"
+      # }
     }
-    volume {
-      name = "rabbitmqvolume"
-      storage_name = azurerm_container_app_environment_storage.rabbitmq-storage.name
-      storage_type = "AzureFile"
-    }
+    # volume {
+    #   name = "rabbitmqvolume"
+    #   storage_name = azurerm_container_app_environment_storage.rabbitmq-storage.name
+    #   storage_type = "AzureFile"
+    # }
   }
   depends_on = [
     azurerm_container_app_environment.ada,
-    azurerm_container_app_environment_storage.rabbitmq-storage
+    # azurerm_container_app_environment_storage.rabbitmq-storage
   ]
 }
 

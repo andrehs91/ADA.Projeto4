@@ -1,8 +1,8 @@
+# Ambiente isolado para execução dos containers
 resource "azurerm_container_app_environment" "ada" {
   resource_group_name        = azurerm_resource_group.ada.name
   location                   = azurerm_resource_group.ada.location
   name                       = "cae-${var.project_name}-${terraform.workspace}"
-  # infrastructure_subnet_id   = azurerm_subnet.ada.id
   log_analytics_workspace_id = azurerm_log_analytics_workspace.ada.id
 
   depends_on = [
@@ -12,6 +12,7 @@ resource "azurerm_container_app_environment" "ada" {
   ]
 }
 
+# Vinculação do compartilhamento de arquivos ao ambiente gerenciado
 resource "azurerm_container_app_environment_storage" "rabbitmq-storage" {
   name                         = "rabbitmqstorage"
   container_app_environment_id = azurerm_container_app_environment.ada.id
@@ -22,10 +23,12 @@ resource "azurerm_container_app_environment_storage" "rabbitmq-storage" {
 
   depends_on = [
     azurerm_container_app_environment.ada,
+    azurerm_storage_account.ada,
     azurerm_storage_share.rabbitmqstorage
   ]
 }
 
+# Vinculação do compartilhamento de arquivos ao ambiente gerenciado
 resource "azurerm_container_app_environment_storage" "redis-storage" {
   name                         = "redisstorage"
   container_app_environment_id = azurerm_container_app_environment.ada.id
@@ -36,6 +39,7 @@ resource "azurerm_container_app_environment_storage" "redis-storage" {
 
   depends_on = [
     azurerm_container_app_environment.ada,
+    azurerm_storage_account.ada,
     azurerm_storage_share.redisstorage
   ]
 }
